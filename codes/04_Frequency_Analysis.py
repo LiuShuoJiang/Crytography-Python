@@ -1,4 +1,5 @@
 import operator
+import sys
 
 
 cipher = """lrvmnir bpr sumvbwvr jx bpr lmiwv yjeryrkbi jx qmbm wi
@@ -25,6 +26,7 @@ class Attack:
         self.alphabet = "abcdefghijklmnopqrstuvwxyz"
         self.plain_chars_left = "abcdefghijklmnopqrstuvwxyz"
         self.cipher_chars_left = "abcdefghijklmnopqrstuvwxyz"
+        self.key = {}
         self.freq = {}
         self.freq_eng = {
             "a": 0.0817,
@@ -88,16 +90,28 @@ class Attack:
             self.mappings[cipher_char] = sorted(map.items(), key=operator.itemgetter(1))
 
     def guess_key(self):
-        key = {}
         for cipher_char in self.cipher_chars_left:
             for plain_char, diff in self.mappings[cipher_char]:
                 if plain_char in self.plain_chars_left:
-                    key[cipher_char] = plain_char
+                    self.key[cipher_char] = plain_char
                     self.plain_chars_left = self.plain_chars_left.replace(
                         plain_char, ""
                     )
                     break
-        return key
+
+    def set_key_mapping(self, cipher_char, plain_char):
+        if (
+            cipher_char not in self.cipher_chars_left
+            or plain_char not in self.plain_chars_left
+        ):
+            print("ERROR: key mapping error", cipher_char, plain_char)
+            sys.exit(-1)
+        self.key[cipher_char] = plain_char
+        self.plain_chars_left = self.plain_chars_left.replace(plain_char, "")
+        self.cipher_chars_left = self.cipher_chars_left.replace(cipher_char, "")
+
+    def get_key(self):
+        return self.key
 
 
 def decrypt(key, cipher):
@@ -110,26 +124,6 @@ def decrypt(key, cipher):
     return message
 
 
-# freq = {}
-# for c in alphabet:
-#     freq[c] = 0
-#
-# letter_count = 0
-# for c in cipher:
-#     if c in freq:
-#         freq[c] += 1
-#         letter_count += 1
-#
-# for c in freq:
-#     freq[c] = round(freq[c] / letter_count, 4)
-#
-# new_line_count = 0
-# for c in freq:
-#     print(c, ":", freq[c], "", end="")
-#     if new_line_count % 3 == 2:
-#         print()
-#     new_line_count += 1
-
 attack = Attack()
 
 attack.calculate_freq(cipher)
@@ -139,9 +133,32 @@ attack.calculate_matches()
 for c in attack.mappings:
     print(c, attack.mappings[c])
 
+attack.set_key_mapping('p', 'h')
+attack.set_key_mapping('r', 'e')
+attack.set_key_mapping('v', 'c')
+attack.set_key_mapping('m', 'a')
+attack.set_key_mapping('w', 'i')
+attack.set_key_mapping('t', 'y')
+attack.set_key_mapping('q', 'k')
+attack.set_key_mapping('y', 'm')
+attack.set_key_mapping('e', 'v')
+attack.set_key_mapping('s', 'p')
+attack.set_key_mapping('u', 'r')
+attack.set_key_mapping('d', 'd')
+attack.set_key_mapping('x', 'f')
+attack.set_key_mapping('a', 'x')
+attack.set_key_mapping('c', 'w')
+# attack.set_key_mapping('p', 'f')
 
 print("*" * 100)
-key = attack.guess_key()
+attack.guess_key()
+key = attack.get_key()
 print(key)
 message = decrypt(key, cipher)
-print(message)
+message_lines = message.splitlines()
+cipher_lines = cipher.splitlines()
+for i in range(len(message_lines)):
+    print('P: ', message_lines[i])
+    print('C: ', cipher_lines[i])
+
+# print(message)
