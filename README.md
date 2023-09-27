@@ -1,5 +1,3 @@
 # Crytography Python
 
-Implemented sample crytography algorithms in Python.
-
-Still updating...
+This is a repository implementing/testing some sample crytography algorithms in Python, as part of my cybersecurity course.
